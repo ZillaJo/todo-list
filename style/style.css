@@ -116,7 +116,8 @@ body {
 
 /* ===== CLEAR ALL ===== */
 #clear-all-btn {
-  background: #211ca7;
+  background: #2161cb;
+  /* background: #211ca7; */
   border: none;
   color: #fff;
   width: 100%;

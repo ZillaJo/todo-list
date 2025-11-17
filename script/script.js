@@ -34,6 +34,14 @@ const addTodo = () => {
   taskinput.value = ""; // clear input field
 };
 
+// Add todo on Enter key press in the input
+taskinput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.keyCode === 13) {
+    e.preventDefault();
+    addTodo();
+  }
+});
+
 // ====== 5. Render Tasks ======
 function renderTasks() {
   todoList.innerHTML = tasks
@@ -47,6 +55,7 @@ function renderTasks() {
         </p>
         
         <div class="actions">
+        
           <button class="edit-btn" data-id="${todo.id}">Edit</button>
           <button class="delete-btn" data-id="${todo.id}">
             <i class='bx bx-trash'></i>
@@ -66,33 +75,53 @@ const deleteTodo = (idToDelete) => {
   renderTasks();
 };
 
-// ====== 7. Toggle Completed ======
-// function toggleCompleted(id) {
-//   tasks = tasks.map((task) =>
-//     task.id === id ? { ...task, completed: !task.completed } : task
-//   );
-//   save(tasks);
-//   renderTasks();
-// }
+//====== 7. Toggle Completed ======
+function toggleCompleted(id) {
+  tasks = tasks.map((task) =>
+    task.id === id ? { ...task, completed: !task.completed } : task
+  );
+  save(tasks);
+  renderTasks();
+}
+
+
+todoList.addEventListener("dblclick", (e) => {
+  const titleEl = e.target.closest(".task-title");
+  if (!titleEl) return;
+  const id = titleEl.dataset.id;
+  if (id) toggleCompleted(id);
+});
+
+
+
 
 // ====== 8. Edit a Task ======
 function startEdit(id) {
   const taskEl = document.getElementById(id);
+  if (!taskEl) return;
   const titleSpan = taskEl.querySelector(".task-title");
-  const oldTitle = titleSpan.textContent;
+  const oldTitle = titleSpan.textContent.trim();
 
   titleSpan.innerHTML = `
-    <p><input type="text" value="${oldTitle}" class="edit-input">
-    <button class="save-edit-btn">Save</button>
+    <p>
+      <input type="text" value="${oldTitle.replace(/"/g, "&quot;")}" class="edit-input">
+      <button class="save-edit-btn">Save</button>
     </p>
   `;
 
   const input = titleSpan.querySelector(".edit-input");
   const saveBtn = titleSpan.querySelector(".save-edit-btn");
 
-  saveBtn.addEventListener("click", () => {
+  input.focus();
+  input.select();
+
+  const finishEdit = () => {
     const newTitle = input.value.trim();
-    if (!newTitle) return alert("Title cannot be empty");
+    if (!newTitle) {
+      alert("Title cannot be empty");
+      input.focus();
+      return;
+    }
 
     tasks = tasks.map((task) =>
       task.id === id ? { ...task, title: newTitle } : task
@@ -100,7 +129,18 @@ function startEdit(id) {
 
     save(tasks);
     renderTasks();
-  });
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === "Enter") {
+      finishEdit();
+    } else if (e.key === "Escape") {
+      renderTasks();
+    }
+  };
+
+  saveBtn.addEventListener("click", finishEdit);
+  input.addEventListener("keydown", onKeyDown);
 }
 
 // ====== 9. Event Listeners ======
